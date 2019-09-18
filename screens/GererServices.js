@@ -15,7 +15,7 @@ export default class GererServices extends React.Component{
   static navigationOptions = {
     headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35}} />,
         headerRight: (
-          <Text style={{marginRight: 10,  color: 'black', fontSize: 20, fontWeight: 'bold'}}>Nos Services</Text>
+          <Text style={{marginRight: 17,  color: 'grey', fontSize: 20, fontWeight: 'bold'}}>Nos Services</Text>
           )
 }
 async _goTo(screen){
@@ -23,32 +23,31 @@ async _goTo(screen){
   navigate(screen);
 }
   render(){
-    const { navigate } = this.props.navigation;
     return(
       <View style={styles.container}>
         <ScrollView>
           <TouchableOpacity onPress={() => this._goTo('Services')}>
             <View style={{flex: 1,alignItems: 'center', justifyContent: 'center', backgroundColor: 'whitesmoke', marginTop: 12}}>
               <View style={{alignItems: 'center'}}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold'}}>Types d'espaces</Text>
+                <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'grey'}}>Types d'espaces</Text>
                 <Avatar rounded size="large" source={require('../assets/images/domicile.png')} containerStyle={{}}/>
               </View>
               <View style={{}}>
-                <Text style={{margin: 2, textAlign: 'center', color: 'grey', fontWeight: '500'}}>
+                <Text style={{margin: 2, textAlign: 'center', color: 'grey', fontWeight: '300', fontSize: 17}}>
                         Espaces de travail conviviaux, Accès à Internet, Boissons froides &
                         chaudes, Impressions & Photocopies, Courses Urbaines et Interurbaines,
                 </Text>
               </View>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => this._goTo('Services')}>
-            <View style={{flex: 1, width, justifyContent: 'center', alignItems: 'center', backgroundColor: 'whitesmoke', marginTop: 16}}>
+          <TouchableOpacity onPress={async () => await this._goTo('Services')}>
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'whitesmoke', marginTop: 16}}>
               <View style={{alignItems: 'center'}}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold'}}>Domiciliation d'entreprise</Text>
+                <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'grey'}}>Domiciliation d'entreprise</Text>
                 <Avatar rounded size="large" source={require('../assets/images/type.png')} containerStyle={{}}/>
               </View>
               <View>
-                <Text style={{margin: 2, textAlign: 'center', color: 'grey', fontWeight: '500'}}>
+                <Text style={{margin: 2, textAlign: 'center', color: 'grey', fontWeight: '300', fontSize: 17}}>
                         Services à valeur ajoutée: domiciliation de l’entreprise, réception et
                         routage d’appels, services de télécom, accompagnement et assistance à
                         la performance de l’entreprise, assurances, financiers…

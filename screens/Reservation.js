@@ -46,7 +46,7 @@ export default class Reservation extends React.Component{
           this._getFormule(types.data[0].NOMTYPE);
         })
         .catch(err => {
-          ToastAndroid.show(err, ToastAndroid.SHORT);
+          ToastAndroid.show(err, ToastAndroid.LONG);
         });
     }
     componentDidMount(){
@@ -70,8 +70,28 @@ export default class Reservation extends React.Component{
           this.setState({formules : formules.data});
         })
         .catch(err => {
-          ToastAndroid.show(err, ToastAndroid.SHORT);
+          ToastAndroid.show(err, ToastAndroid.LONG);
         });
+    }
+    async _askNewToken(){
+        const config = {
+          headers: {
+            'Content-type' : 'application/json',
+            'Access-Control-Allow-Origin' : '*'
+          }
+        };
+        const data = {
+          e: await AsyncStorage.getItem('email'),
+          t: await AsyncStorage.getItem('refreshToken')
+        };
+        const token = axios.post(Api.baseUrl + '/api.blueworks/token/', data, config)
+        .then(res => {
+          return res.data.token;
+        })
+        .catch(err => {
+          return null;
+        });
+        return token;
     }
     async _asyncBook(){
       const {navigate} = this.props.navigation;
@@ -92,16 +112,28 @@ export default class Reservation extends React.Component{
           i: this.state.i,
           h: this.state.h
         };
-        axios.post(Api.baseUrl + '/api.blueworks/reservation', data, config)
-        .then(async res => {
-          ToastAndroid.show('success', ToastAndroid.SHORT);
-          navigate('EtatServices', {rsv: res.data, type: this.state.t, opt:true});
-        })
-        .catch(err => {
-          if(err.response.status === 404)
-            ToastAndroid.show('Aucun espace de ce type libre', ToastAndroid.SHORT);
-          else ToastAndroid.show('Vous avez deja une reservation pour ce jour', ToastAndroid.SHORT);
-        });
+        if(data.j === undefined)
+          ToastAndroid.show('Veuillez renseigner la date', ToastAndroid.LONG);
+        else {
+          await AsyncStorage.setItem('rsv', JSON.stringify(data));
+          axios.post(Api.baseUrl + '/api.blueworks/reservation/verify', data, config)
+          .then(async res => {
+            navigate('Confirm', {t: this.state.t, f: this.state.f});
+          })
+          .catch(async err => {
+            if(err.response.status === 404)
+              ToastAndroid.show('Aucun espace de ce type libre', ToastAndroid.LONG);
+            else if (err.response.status === 403) {
+              const crd = await this._askNewToken();
+              if(crd != null){
+                await AsyncStorage.setItem('token', crd);
+                navigate('Confirm', {t: this.state.t, f: this.state.f});
+              }
+              else navigate('Login', {cible: 'Reservation', back: true});
+            }
+            else ToastAndroid.show('Vous avez deja une reservation pour ce jour', ToastAndroid.LONG);
+          });
+        }
     }
   render(){
     return(

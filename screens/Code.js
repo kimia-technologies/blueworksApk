@@ -35,22 +35,22 @@ export default class Code extends React.Component{
     };
     axios.post(Api.baseUrl + '/reservation/pay', params.rsv, config)
       .then(state => {
-        ToastAndroid.show('succes', ToastAndroid.SHORT);
+        ToastAndroid.show('succes', ToastAndroid.LONG);
         this.props.navigation.replace('Historiques', {all: true});
       })
       .catch(err => {
-        ToastAndroid.show('Echec du paiement', ToastAndroid.SHORT);
+        ToastAndroid.show('Echec du paiement', ToastAndroid.LONG);
       });
   }
   render(){
-    const {navigate} = this.props.navigation;
+    const {navigate} = this.props.navigation.navigate;
     return(
       <KeyboardAvoidingView behavior="padding" enabled>
       <ScrollView>
       <View style = {styles.container}>
         <View style={{marginTop: 10}}>
           <Image style = {{width: 130, height: 130}}
-          source={require('../assets/images/BlueSpace.jpeg')} />
+          source={require('../assets/images/blueworks.png')} />
         </View>
         <View style={{marginVertical: 0}}>
             <View style={{alignItems: 'center'}}>
@@ -60,7 +60,7 @@ export default class Code extends React.Component{
                 <TextInput style = {styles.inputBox}
                   underlineColorAndroid = 'transparent'
                   placeholder='phone*'
-                  onChangeText={text=>this.setState({t: text})}
+                  onChangeText={text => this.setState({t: text})}
                   placeholderTextColor='grey'
                 />
             </View>

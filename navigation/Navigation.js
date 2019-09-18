@@ -6,16 +6,18 @@ import {
 import Couverture from '../screens/Couverture';
 import Login from '../screens/Login';
 import Sign from '../screens/Signin';
-import Acceuil, { Accueil } from '../screens/Accueil';
+import Acceuil from '../screens/Accueil';
 import GererReservation from '../screens/GererReservation';
 import Adherer from '../screens/Adherer';
 import Reservation from '../screens/Reservation';
 import Code from '../screens/Code';
+import Confirm from '../screens/Confirm';
 import Historiques from '../screens/Historique';
 import Services from '../screens/Services';
 import Actualites from '../screens/Actualites';
 import GererCompte from '../screens/GererCompte';
 import ModifierCompte from '../screens/ModifierCompte';
+import Paiement from '../screens/Paiement';
 import EtatServices from '../screens/EtatServices';
 import ServicesClient from '../screens/ServicesClient';
 import GererServices from '../screens/GererServices';
@@ -30,7 +32,7 @@ const screen = createStackNavigator({
         screen: Acceuil,
         navigationOptions: {
             headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35, marginLeft: 15}} />,
-            headerRight: <Text style={{marginRight: 20, color: 'black', fontSize: 20, fontWeight: 'bold'}}>Blue Work Spaces</Text>
+            headerRight: <Text style={{marginRight: 20, color: 'grey', fontSize: 20, fontWeight: 'bold'}}>#BlueWorkS</Text>
         }
     },
     Login: {
@@ -50,6 +52,9 @@ const screen = createStackNavigator({
     },
     Code: {
         screen: Code
+    },
+    Confirm: {
+        screen: Confirm
     },
     Historiques: {
         screen: Historiques
@@ -74,6 +79,9 @@ const screen = createStackNavigator({
     },
     ModifierCompte: {
         screen: ModifierCompte
+    },
+    Paiement: {
+        screen: Paiement
     }
 }, {
     initialRouteName: 'Couverture'

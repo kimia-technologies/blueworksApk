@@ -18,55 +18,71 @@ var axios = require('axios');
 
 export default class Login extends React.Component{
   static navigationOptions = {
-    title: 'Se connecter'
+    title: 'Se connecter',
+    drawerIcon: (
+      <Image source = {require('../assets/images/login.png')}
+      style={{height: 26, width: 26}} />
+    ),
 }
 constructor(props) {
   super(props);
   this.state = {};
-  this.data = {};
 }
 componentDidMount(){
   const {params} = this.props.navigation.state;
   this.state.cible = params.cible;
+  if (params.back !== undefined)
+    this.state.back = params.back;
 }
-async _asyncLogin(){
+  async _asyncLogin(){
+    const {navigate} = this.props.navigation;
     const config = {
       headers: {
         'Content-type' : 'application/json',
         'Access-Control-Allow-Origin' : '*'
       }
     };
-    axios.post(Api.baseUrl + '/api.blueworks/login', this.data, config)
-    .then(async res => {
-      if(res.data.user){
-        await AsyncStorage.setItem('token', res.data.token);
-        this.props.navigation.replace(this.state.cible);
-      }
-    })
-    .catch(err => {
-      this.data = {};
-      this.setState({err: err.response.data.msg});
-    });
-}
+    const data = {
+      id: this.state.id,
+      k: this.state.k
+    };
+    await axios.post(Api.baseUrl + '/api.blueworks/login', data, config)
+      .then(async res => {
+        if(res.data.user){
+          await AsyncStorage.setItem('token', res.data.token);
+          await AsyncStorage.setItem('email', res.data.user.email);
+          await AsyncStorage.setItem('refreshToken', res.data.refreshToken);
+          if(this.state.back !== undefined)
+            navigate(null);
+          else this.props.navigation.replace(this.state.cible);
+        }
+      })
+      .catch(err => {
+        this.state.k = '';
+        this.setState({err: err.response.data.msg});
+      });
+  }
   render(){
     const {navigate} = this.props.navigation;
     return(
-      <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={-200} enabled>
+      <Text behavior="padding" keyboardVerticalOffset={-200} enabled>
       <ScrollView>
       <View style = {styles.container}>
         <View style={{marginTop: 10, alignItems: 'center'}}>
           <Image style = {{width: 130, height: 130}}
           source={require('../assets/images/blueworks.png')} />
-          <Text style={Styles.slogan}>Great places to focus on what matters...</Text> 
+          <Text style={Styles.slogan}>Great places to focus on what matters...</Text>
         </View>
         <View style={{marginVertical: 20}}>
             <View>
               <Text style={{fontSize: 16, color: 'grey', marginLeft: 10, top: 20}}>Email, Telephone ou pseudo</Text>
                 <TextInput style = {styles.inputBox}
                   underlineColorAndroid = 'transparent'
+                  autoCapitalize = "none"
+                  autoFocus={true}
                   autoCorrect ={false}
-                  onChangeText = {text => {this.data.id = text}}
-                  value = {this.data.id}
+                  onChangeText = {text => {this.setState({id: text})}}
+                  value = {this.state.id}
                 />
             </View>
               <View>
@@ -74,8 +90,8 @@ async _asyncLogin(){
                   <TextInput style = {styles.inputBox}
                   secureTextEntry = {true}
                   autoCorrect = {false}
-                  onChangeText = {text => {this.data.k=text}}
-                  value = {this.data.k}
+                  onChangeText = {text => {this.setState({k: text})}}
+                  value = {this.state.k}
                   />
               </View>
           </View>
@@ -85,11 +101,8 @@ async _asyncLogin(){
           </TouchableOpacity>
           {
             this.state.err !== undefined ?
-            <Text style={{color: 'red', marginTop: 0}}>Identifiant incorrect</Text> : null
+            <Text style={{color: 'red', marginTop: 0}}>{this.state.err}</Text> : null
           }
-          <TouchableOpacity style = {styles.signupCont}>
-              <Text style = {styles.signupText}>Mot de passe oublié ?</Text>
-          </TouchableOpacity>
           <View style = {styles.signupTextCont}>
             <TouchableOpacity onPress={() => navigate('Sign', {cible: this.state.cible})}>
               <Text style = {styles.signupButton}>S'inscrire</Text>
@@ -97,7 +110,7 @@ async _asyncLogin(){
           </View>
       </View>
       </ScrollView>
-      </KeyboardAvoidingView>
+      </Text>
     );
   }
 }

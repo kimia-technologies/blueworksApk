@@ -8,7 +8,7 @@
   },
   "rnpm": {
     "asset": [
-      "./assets/fonts"
+      "./assets/fonts/"
     ]
   },
   "jest": {
@@ -34,6 +34,7 @@
     "expo-font": "~6.0.0",
     "expo-web-browser": "6.0.0",
     "native-base": "^2.13.6",
+    "prop-types": "^15.7.2",
     "react-native-async-storage": "0.0.1",
     "react-native-datepicker": "^1.7.2",
     "react-native-element": "^1.2.1",
@@ -41,6 +42,8 @@
     "react-native-modal-datetime-picker": "^7.5.0",
     "react-native-paper": "^2.16.0",
     "react-native-progress-bar-animated": "^1.0.6",
+    "react-native-responsive-screen": "^1.2.2",
+    "react-native-slideshow": "^1.0.1",
     "react-native-table-component": "^1.2.0",
     "react-navigation": "^3.11.0"
   },

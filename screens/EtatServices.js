@@ -4,7 +4,6 @@ import { Table, Row, Rows} from 'react-native-table-component';
 import { Card } from 'react-native-elements';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 var axios = require('axios');
 export default class EtatServices extends Component {
@@ -20,7 +19,6 @@ export default class EtatServices extends Component {
         tableHead: ['Service', 'Quantite restante (consommation)'],
         services: []
       };
-      this.token = null;
     }
     async componentWillMount(){
       const {params} = this.props.navigation.state;
@@ -30,6 +28,26 @@ export default class EtatServices extends Component {
       if(params.opt !== undefined)
         this.setState({opt: true});
       this._getConsommation();
+    }
+    async _askNewToken(){
+        const config = {
+          headers: {
+            'Content-type' : 'application/json',
+            'Access-Control-Allow-Origin' : '*'
+          }
+        };
+        const data = {
+          e: await AsyncStorage.getItem('email'),
+          t: await AsyncStorage.getItem('refreshToken')
+        };
+        const token = axios.post(Api.baseUrl + '/api.blueworks/token/', data, config)
+        .then(res => {
+          return res.data.token;
+        })
+        .catch(err => {
+          return null;
+        });
+        return token;
     }
     componentDidMount(){
       const {params} = this.props.navigation.state;
@@ -41,10 +59,18 @@ export default class EtatServices extends Component {
         }
       })
       .then(res => {
-        this.setState({description: res.data.DESCRIPTION});
+        this.setState({description: res.data.INFO.DESCRIPTION});
+        this.setState({images: res.data.IMAGES[0].CONTENU});
       })
-      .catch(err => {
-        ToastAndroid.show(err, ToastAndroid.SHORT);
+      .catch(async err => {
+        const {navigate} = this.props.navigation;
+        if (err.response.status === 403) {
+          const crd = await this._askNewToken();
+          if(crd != null){
+            await AsyncStorage.setItem('token', crd);
+          }
+          else navigate('Login', {cible: 'Historique'});
+        }
       });
     }
     async _getConsommation(){
@@ -68,11 +94,10 @@ export default class EtatServices extends Component {
           this.setState({services: service});
         })
         .catch(err => {
-          ToastAndroid.show(err, ToastAndroid.SHORT);
+          ToastAndroid.show(err, ToastAndroid.LONG);
         });
     }
     _getRemainingTime(){
-      console.log(new Date(Date.now()));
       return <Text>YO</Text>
     }
     render() {
@@ -81,7 +106,7 @@ export default class EtatServices extends Component {
           <View>
             <Card
               containerStyle={{marginVertical: 8}}
-              image={require('../assets/images/img.jpg')}
+              image={{uri: this.state.images}}
             >
               <View style={{marginBottom: 8, fontSize: 16}}>
                 <Text>{this.state.type}</Text>
@@ -95,13 +120,6 @@ export default class EtatServices extends Component {
               <Rows data={this.state.services} textStyle={styles.text}/>
             </Table>
           </View>
-          {
-            this.state.opt !== undefined ?
-            <View>
-            <TouchableOpacity onPress={() => this.props.navigation('Code', {rsv: this.state.rsv})}><Text>Payer toute suite</Text></TouchableOpacity>
-            <TouchableOpacity onPress={() => this.props.navigation.replace('historiques', {all: true})}><Text>Payer plus tard</Text></TouchableOpacity>
-            </View> : null
-          }
           <Text style={Styles.slogan}>Great places to focus on what matters...</Text>
           </ScrollView>
         )
@@ -110,6 +128,13 @@ export default class EtatServices extends Component {
      
     const styles = StyleSheet.create({
       container: { flex: 1, backgroundColor: '#fff', padding: 5, margin: 5 },
+      button: {
+            backgroundColor: 'rgb(0, 111, 186)',
+            width: 300,
+            borderRadius: 25,
+            paddingVertical: 13,
+            marginBottom: 6
+        },
       head: { height: 40, backgroundColor: '#f1f8ff' },
       text: { margin: 6 }
     });

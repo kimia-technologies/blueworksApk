@@ -34,6 +34,26 @@ export default class ModifierCompte extends React.Component{
   componentDidMount(){
     this.setState({isDateTimePickerVisible: false});
   }
+  async _askNewToken(){
+      const config = {
+        headers: {
+          'Content-type' : 'application/json',
+          'Access-Control-Allow-Origin' : '*'
+        }
+      };
+      const data = {
+        e: await AsyncStorage.getItem('email'),
+        t: await AsyncStorage.getItem('refreshToken')
+      };
+      const token = axios.post(Api.baseUrl + '/api.blueworks/token/', data, config)
+      .then(res => {
+        return res.data.token;
+      })
+      .catch(err => {
+        return null;
+      });
+      return token;
+  }
   async _asyncUpdate(){
     const token = await AsyncStorage.getItem('token');
       const config = {
@@ -47,11 +67,11 @@ export default class ModifierCompte extends React.Component{
       };
       axios.patch(Api.baseUrl + '/api.blueworks/account/my-account', this.state, config)
       .then(res => {
-        ToastAndroid.show('success', ToastAndroid.SHORT);
+        ToastAndroid.show('success', ToastAndroid.LONG);
         this.props.navigation.replace('GereCompte');
       })
-      .catch(err => {
-        ToastAndroid.show(err, ToastAndroid.SHORT);
+      .catch(async err => {
+        ToastAndroid.show('echec', ToastAndroid.LONG);
       });
   }
   _computeAvantar(){

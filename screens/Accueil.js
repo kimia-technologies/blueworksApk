@@ -1,29 +1,81 @@
 import React from 'react';
-import {ScrollView,StyleSheet, Image,Text, View, Dimensions, AsyncStorage, TextInput, ToastAndroid} from 'react-native';
+import {ScrollView,StyleSheet, Image,Text, View, Dimensions, AsyncStorage, ToastAndroid} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { Card, Badge} from 'react-native-elements';
-import { createDrawerNavigator } from 'react-navigation';
-import GererCompte from './GererCompte';
+import { Card, Badge, Avatar} from 'react-native-elements';
+import Slideshow from 'react-native-slideshow';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+  listenOrientationChange as lor,
+  removeOrientationListener as rol
+} from 'react-native-responsive-screen';
+import { createDrawerNavigator,DrawerItems } from 'react-navigation';
+import Signin from './Signin';
+import Login from './Login';
+import Activer from './Activer';
+import Adherer from './Adherer';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
 var axios = require('axios');
 
+const CustomDrawerContentComponent = (props) => ( 
+  <View>
+      <View style = {{height: 150, backgroundColor: 'rgb(0, 111, 186)', justifyContent: 'center', alignItems: 'center'}}>
+      <Avatar rounded title="SD" size="large" containerStyle={{top: 3, marginVertical: 5}}/>
+      <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold' }}></Text>
+      </View>
+          <DrawerItems {...props}/>
+  </View>
+);
 export class Accueil extends React.Component {
+  static navigationOptions = {
+    drawerIcon: (
+      <Image source = {require('../assets/images/home.png')}
+      style={{height: 26, width: 26}} />
+    ),
+    title : "Accueil"
+  }
   constructor(props){
     super(props);
-    this.state = {};
+    this.state = {
+      position: 0,
+      interval: null,
+      dataSource: []
+    };
   }
-  async componentWillMount(){
-    const token = await AsyncStorage.getItem('token');
-    axios.get(Api.baseUrl, {
+  async componentWillMount() {
+    await axios.get(Api.baseUrl, {
       params: {},
       headers: {
         'Content-type' : 'application/json',
         'Access-Control-Allow-Origin' : '*'
       }
     })
-    .then(r => {
+    .then(res => {
       this.setState({etat: true});
+      let images = [];
+      let pos = [];
+      var tmp;
+      var i = 0;
+      while(i<5){
+        tmp = Math.floor(Math.random()*res.data.length);
+        if (!pos.includes(tmp)) {
+          pos.push(tmp);
+          i++;
+        }
+      }
+      for (let i=0, k=0; i<res.data.length && k<pos.length; i++, k++){
+        images.push({url: res.data[pos[k]]});
+      }
+      this.setState({dataSource: images});
+      this.setState({
+      interval: setInterval(() => {
+        this.setState({
+          position: this.state.position === this.state.dataSource.length-1 ? 0 : this.state.position + 1
+        });
+      }, 5000)
+    });
+    this.setState({etat: true});
     })
     .catch(err => {
       this.setState({etat: false});
@@ -32,35 +84,62 @@ export class Accueil extends React.Component {
   async _asyncIsLoged(cible){
     const token = await AsyncStorage.getItem('token');
     const {navigate} = this.props.navigation;
-    if(token !== null)
+    if(token !== null) {
       navigate(cible);
+    }
     else navigate('Login', {cible: cible, token: token});
   }
   async _asyncLogOut(){
-    console.log('log out');
-    await AsyncStorage.removeItem('token');
+    const token = await AsyncStorage.getItem('token');
+    const config = {
+      headers: {
+        'Content-type' : 'application/json',
+        'Access-Control-Allow-Origin' : '*',
+        'Authorization' : 'Bearer ' + token
+      }
+    };
+    axios.post(Api.baseUrl + '/api.blueworks/logout', {}, config)
+    .then(async () => {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('email');
+      await AsyncStorage.removeItem('refreshToken');
+    })
+    .catch(async err => {
+      ToastAndroid.show('Vous n\'etes pas connecte!', ToastAndroid.LONG);
+    });
   }
   async _goTo(screen){
     const {navigate} = this.props.navigation;
     navigate(screen);
   }
+  componentDidMount() {
+    lor(this);
+  }
+  
+  componentWillUnmount() {
+    rol();
+  }
+ 
   render(){
-    return (
-        <View style={styles.container}>
+      return (
+      this.state.etat !== undefined ? (this.state.etat === false ? <View style={{alignItems: "center", marginTop: "50%"}}>
+      <Text style={{textAlign: "center", fontSize: 18, color: "grey"}}>{String('Verifiez votre connexion internet')}</Text>
+      </View> :
+      <View style={styles.container}>
         <ScrollView>
-          { this.state.etat === false ? 
-            <Text>Vous n'etes pas connecte</Text> : null
-          }
-          <View style={{marginTop: -10, marginVertical: 7, width,}}>
-            <Card image={require('../assets/images/cowork.jpg')}>
-              <Image source={require('../assets/images/search.png')} style={{height: 25, width: 25, top: 0, zIndex: 1}} />
-              <TextInput style = {styles.inputBox}
-                  placeholder = "Search..."
-                  placeholderTextColor = "grey"
-                />
-            </Card>
-          </View>
-        <View style={{alignItems: 'center', backgroundColor: 'white'}}>
+          <View style={{marginTop:0, marginVertical: 7, width,}}>
+          <View style={{width: '96%', marginLeft: '2%',marginTop:5}}>
+            <Slideshow 
+                dataSource={this.state.dataSource}
+                position={this.state.position}
+                onPositionChanged={position => this.setState({ position })} 
+                indicatorColor = 'rgb(0, 111, 186)'
+                scrollEnabled = {false}
+                overlay = {true}
+            />
+            </View>
+        </View>
+        <View style={{alignItems: 'center', height: '70%'}}>
           <View style={styles.card}>
                 <View style={styles.cards}>
                       <TouchableOpacity style={styles.cardContenu} onPress={async () => await this._asyncIsLoged('GererReservation')}>
@@ -133,7 +212,7 @@ export class Accueil extends React.Component {
           </View>
           </ScrollView>
           <Text style={Styles.slogan}>Great places to focus on what matters...</Text>
-        </View>
+        </View>) : null
     );
   }
 }
@@ -142,21 +221,31 @@ export default createDrawerNavigator({
   Home: {
     screen: Accueil
   },
-  settings: {
-    screen: GererCompte
+  Activer: {
+    screen: Activer
+  },
+  Login: {
+    screen: Login
+  },
+  Sign: {
+    screen: Signin
   }
-})
+}, {
+  contentComponent: CustomDrawerContentComponent
+});
+
 const {width = WIDTH} = Dimensions.get('window')
 const {height = HEIGHT} = Dimensions.get('window')
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'white'
+    backgroundColor: 'whitesmoke',
+    height
   },
   card: {
     flexDirection: 'row',
-    marginVertical: 3,
+    marginVertical: '1%',
   },
   cardEspText: {
     color: 'white',
@@ -166,7 +255,7 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     paddingHorizontal: 35,
-        width: 320,
+    width: wp('90%'),
         height:35,
         borderRadius: 20,
         fontSize:16,
@@ -178,7 +267,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 0,
         marginTop: 5,
-        marginLeft: 5
+        marginLeft: '1%'
     },
   cardText: {
     fontWeight: '300',
@@ -197,8 +286,8 @@ const styles = StyleSheet.create({
   },
   cardContenu: {
       backgroundColor: 'whitesmoke',
-      width: 150,
-      height: 65,
+      width: wp('42%'),
+      height: hp('12%'),
       marginHorizontal: 13,
       borderRadius: 5,
       alignItems: 'center',
@@ -215,8 +304,8 @@ const styles = StyleSheet.create({
   },
   cardContenuB: {
       backgroundColor: 'rgb(0, 111, 186)',
-      width: 150,
-      height: 75,
+      width: wp('42%'),
+      height: hp('12%'),
       color: 'white',
       marginHorizontal: 13,
       borderRadius: 5,

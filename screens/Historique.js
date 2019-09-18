@@ -7,9 +7,10 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
+  ToastAndroid,
   AsyncStorage
 } from 'react-native';
-import { Card, Badge, ToastAndroid } from 'react-native-elements';
+import { Card, Badge } from 'react-native-elements';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
 var axios = require('axios');
@@ -28,10 +29,31 @@ export default class Historiques extends React.Component{
         rsv: []
       };
     }
+    async _askNewToken(){
+        const config = {
+          headers: {
+            'Content-type' : 'application/json',
+            'Access-Control-Allow-Origin' : '*'
+          }
+        };
+        const data = {
+          e: await AsyncStorage.getItem('email'),
+          t: await AsyncStorage.getItem('refreshToken')
+        };
+        const token = await axios.post(Api.baseUrl + '/api.blueworks/token/', data, config)
+        .then(res => {
+          return res.data.token;
+        })
+        .catch(err => {
+          return null;
+        });
+        return token;
+    }
     async componentWillMount(){
+      const {navigate} = this.props.navigation;
       const {params} = this.props.navigation.state;
       const token = await AsyncStorage.getItem('token');
-      axios.get(Api.baseUrl + '/api.blueworks/reservation/my-books', {
+      await axios.get(Api.baseUrl + '/api.blueworks/reservation/my-books', {
             params: {},
             headers: {
                 'Content-type' : 'application/json',
@@ -47,14 +69,22 @@ export default class Historiques extends React.Component{
             rsvs = rsv.data.filter(r => {
               return r.ETAT === 1;
             });
+            if (rsvs.length === 0 )
+              this.setState({p: false});
           } else {
             this.setState({p: true});
             rsvs = rsv.data;
           }
           this.setState({rsv: rsvs});
         })
-        .catch(err => {
-          ToastAndroid.show(err, ToastAndroid.SHORT);
+        .catch(async err => {
+          if (err.response.status === 403) {
+            const crd = await this._askNewToken();
+            if(crd != null){
+              await AsyncStorage.setItem('token', crd);
+            }
+            else navigate('Login', {cible: 'Historique'});
+          }
         });
     }
     render(){
@@ -65,8 +95,8 @@ export default class Historiques extends React.Component{
                 {
                   this.state.rsv.length === 0 ? <View style={{marginTop: 70, alignItems: 'center'}}>
                     <Image source={require('../assets/images/empty.png')} />
-                    <Text style={{fontSize: 17}}>{this.state.p === false ? String('Vous n\'avez aucune reservation') : 
-                    String('Vous n\'avez aucune reservation en cours')}</Text>
+                    <Text style={{fontSize: 17}}>{this.state.p !== undefined ? (this.state.p === true ? String('Vous n\'avez aucune reservation') : 
+                    String('Vous n\'avez aucune reservation en cours')) : null}</Text>
                   </View> :
                   this.state.rsv.map(r => (
                     <TouchableOpacity key={r.IDRESERVATION} style={{width :'100%'}}

@@ -17,6 +17,26 @@ export default class GererCompte extends React.Component{
         super(props);
         this.state = {};
     }
+    async _askNewToken(){
+        const config = {
+          headers: {
+            'Content-type' : 'application/json',
+            'Access-Control-Allow-Origin' : '*'
+          }
+        };
+        const data = {
+          e: await AsyncStorage.getItem('email'),
+          t: await AsyncStorage.getItem('refreshToken')
+        };
+        const token = axios.post(Api.baseUrl + '/api.blueworks/token/', data, config)
+        .then(res => {
+          return res.data.token;
+        })
+        .catch(err => {
+          return null;
+        });
+        return token;
+    }
     async componentWillMount() {
         const token = await AsyncStorage.getItem('token');
         axios.get(Api.baseUrl + '/api.blueworks/account/my-account', {
@@ -36,8 +56,15 @@ export default class GererCompte extends React.Component{
             this.setState({p: user.data.PRENOM});
             this.setState({t: user.data.PHONE});
         })
-        .catch(err => {
-            ToastAndroid.show(err, ToastAndroid.SHORT);
+        .catch(async err => {
+            if (err.response.status === 403) {
+                const crd = await this._askNewToken();
+                if(crd != null){
+                  await AsyncStorage.setItem('token', crd);
+                }
+                else navigate('Login', {cible: 'Reservation', back: true});
+            }
+            ToastAndroid.show(err, ToastAndroid.LONG);
         });
     }
     _computeAvantar(){

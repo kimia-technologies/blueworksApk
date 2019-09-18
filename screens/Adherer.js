@@ -12,7 +12,12 @@ export default class Adherer extends React.Component{
     headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35}} />,
     headerRight: (
       <Text style={{marginRight: 20, color: 'black', fontSize: 20, fontWeight: 'bold'}}>Adherer</Text>
-    )
+    ),
+    drawerIcon: (
+      <Image source = {require('../assets/images/exit.png')}
+      style={{height: 26, width: 26}} />
+    ),
+    title : "Deconnexion"
   }
   render(){
     return(

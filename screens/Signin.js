@@ -5,6 +5,7 @@ import {
   TextInput,
   Text,
   View,
+  Image,
   ToastAndroid,
   TouchableOpacity,
   Dimensions,
@@ -18,17 +19,34 @@ var axios = require('axios');
 
 export default class Sign extends React.Component{
   static navigationOptions = {
-    title: 'S\'inscrire'
-}
+    title: 'S\'inscrire',
+    drawerIcon: (
+      <Image source = {require('../assets/images/user1.png')}
+      style={{height: 26, width: 26}} />
+    ),
+    title : 'S\'inscrire'
+  }
   constructor(props) {
     super(props);
     this.state = {};
-    this.data = {};
   }
   _asyncSignin() {
+    const pattern = {
+      ePattern : /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g,
+      tPattern : /^6[-\s\.\/0-9]{8}$/g,
+      gPattern : /[!#,^`\[\].?":{}|<>]/g
+    };
     const {navigate} = this.props.navigation;
     const {params} = this.props.navigation.state;
-    if(this.data.k === this.data.c)
+    const data = {
+      e: pattern.ePattern.test(this.state.e) === true ? this.state.e : undefined,
+      ps: pattern.gPattern.test(this.state.ps) === false ? this.state.ps : undefined,
+      n: pattern.gPattern.test(this.state.n) === false ? this.state.n : undefined,
+      p: pattern.gPattern.test(this.state.p) === false ? this.state.p : undefined,
+      k: pattern.gPattern.test(this.state.k) === false ? (/^.{5,}$/g.test(this.state.k) === true ? this.state.k : undefined) : undefined,
+      t: pattern.tPattern.test(this.state.t) === true ? this.state.t : undefined
+    };
+    if(this.state.k === this.state.c)
     {
       const config = {
         headers: {
@@ -36,18 +54,24 @@ export default class Sign extends React.Component{
           'Access-Control-Allow-Origin' : '*'
         }
       };
-      if(this.state.k === this.state.c) {
-      axios.post(Api.baseUrl + '/api.blueworks/signIn', this.data, config)
+      if(data.t === undefined)
+        ToastAndroid.show('telephone incorrect', ToastAndroid.LONG);
+      else if(data.e === undefined)
+        ToastAndroid.show('email incorrect', ToastAndroid.LONG);
+      else if(data.ps === undefined)
+        ToastAndroid.show('!#,^`\[\].?":{}|<> interdits', ToastAndroid.LONG);
+      else {
+        axios.post(Api.baseUrl + '/api.blueworks/signIn', data, config)
         .then(res => {
           if(res.data.msg === 'success');
-            navigate('Login', {cible: params.cible});
+            navigate('Activer', {cible: params.cible, email: data.e});
         })
         .catch(err => {
-          ToastAndroid.show(err, ToastAndroid.SHORT);
+          ToastAndroid.show(err.response.data.msg, ToastAndroid.LONG);
         });
       }
-    } else ToastAndroid.show('mots de passe differents', ToastAndroid.SHORT);
-    }
+    } else ToastAndroid.show('mots de passe differents', ToastAndroid.LONG);
+  }
   render(){
     const {navigate} = this.props.navigation;
     return(
@@ -57,7 +81,7 @@ export default class Sign extends React.Component{
             <View>
               <Card image={require('../assets/images/coworking.png')}>
              <Text>
-             Vous trouverez toujours l'espace adhéquat a vos besoins, vous satisfaire est notre priorité !!!
+              {String('Vous trouverez toujours l\'espace adhéquat a vos besoins, vous satisfaire est notre priorité !!!')}
              </Text>
              </Card>
             </View>
@@ -67,10 +91,13 @@ export default class Sign extends React.Component{
                       ref = 'email'
                       placeholder = "Email*"
                       autoCorrect = {false}
+                      autoCapitalize = "none"
+                      autoFocus={true}
                       keyboardType = {'email-address'}
                       placeholderTextColor = "grey"
                       underlineColorAndroid = 'transparent'
-                      onChangeText = {text=>{this.data.e = text}}
+                      onChangeText = {text=>{this.setState({e: text})}}
+                      value={this.state.e}
                     />
                 </View>
                 <View>
@@ -79,7 +106,8 @@ export default class Sign extends React.Component{
                       autoCorrect = {false}
                       placeholderTextColor = "grey"
                       underlineColorAndroid = 'transparent'
-                      onChangeText = {text=>{this.data.ps = text}}
+                      onChangeText = {text=>{this.setState({ps: text})}}
+                      value={this.state.ps}
                     />
                 </View>
                 <View>
@@ -89,7 +117,8 @@ export default class Sign extends React.Component{
                       keyboardType = {'phone-pad'}
                       placeholderTextColor = "grey"
                       underlineColorAndroid = 'transparent'
-                      onChangeText = {text=>{this.data.t = text}}
+                      onChangeText = {text=>{this.setState({t: text})}}
+                      value={this.state.t}
                     />
                 </View>
                   <View>
@@ -97,7 +126,8 @@ export default class Sign extends React.Component{
                       placeholder = "Prenom"
                       autoCorrect = {false}
                       placeholderTextColor = "grey"
-                      onChangeText = {text=>{this.data.p = text}}
+                      onChangeText = {text=>{this.setState({p: text})}}
+                      value={this.state.p}
                       />
                   </View>
                 <View>
@@ -106,7 +136,8 @@ export default class Sign extends React.Component{
                       autoCorrect = {false}
                       placeholderTextColor = "grey"
                       underlineColorAndroid = 'transparent'
-                      onChangeText = {text=>{this.data.n = text}}
+                      onChangeText = {text=>{this.setState({n: text})}}
+                      value={this.state.n}
                     />
                 </View>
                   <View>
@@ -115,7 +146,8 @@ export default class Sign extends React.Component{
                       autoCorrect = {false}
                       secureTextEntry = {true}
                       placeholderTextColor = "grey"
-                      onChangeText = {text=>{this.data.k = text}}
+                      onChangeText = {text=>{this.setState({k: text})}}
+                      value={this.state.k}
                       />
                   </View>
                   <View>
@@ -124,7 +156,8 @@ export default class Sign extends React.Component{
                       autoCorrect = {false}
                       secureTextEntry = {true}
                       placeholderTextColor = "grey"
-                      onChangeText = {text=>{this.data.c = text}}
+                      onChangeText = {text=>{this.setState({c: text})}}
+                      value={this.state.c}
                       />
                   </View>
               </View>

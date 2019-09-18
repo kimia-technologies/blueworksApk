@@ -7,54 +7,79 @@ import {
     Image,
     ImageBackground,
     ScrollView,
-    AppRegistry
+    AppRegistry,
+    TouchableNativeFeedback
 } from 'react-native';
 import { Button } from 'react-native-elements';
+import {
+    widthPercentageToDP as wp,
+    heightPercentageToDP as hp,
+    listenOrientationChange as lor,
+    removeOrientationListener as rol
+} from 'react-native-responsive-screen';
 
 export default class Couverture extends React.Component{
     static navigationOptions = {
         header: null,
     }
+    componentDidMount() {
+        lor(this);
+      }
+      
+      componentWillUnmount() {
+        rol();
+      }
     render(){
+        const {replace} = this.props.navigation;
         return(
-            <ImageBackground source={require('../assets/images/background1.jpeg')} style={{}}>
+            <ImageBackground source={require('../assets/images/bac1.jpeg')} style={{}}>
             <ScrollView horizontal={true} pagingEnabled={true} showsHorizontalScrollIndicator={true}>
                 <View style={styles.container}>
-                    <View style={styles.cardlogo}>
+                    <View style={styles.entete}>
+                        <TouchableNativeFeedback>
+                        <Button raised title="Embarquez!!!" onPress={()=> replace('Accueil')}
+                            buttonStyle={{backgroundColor: 'white'}}
+                            titleStyle={{color: 'rgb(0, 111, 186)'}}
+                            TouchableNativeFeedback
+                            containerStyle={{width: '75%',marginVertical: 20, marginTop: '15%'}}
+                        />
+                        </TouchableNativeFeedback>
                         <Image source={require('../assets/images/blueworks.png')} style={{height: 150, width: 150}} />
                         <Text style={styles.slogan}>Great places to focus on what matters...</Text>
                     </View>
-                    <View style={styles.description}>
-                        <Text style={{textAlign: 'center', margin: 2, color: 'white', fontWeight: '500', fontSize: 16}}>
-                        Blue WorkS est ensemble d'espace de travail partagé ou se rencontrent Startups, TPE et PME. Nous 
-                        vous offrons un environnement stimulant sans hiérachie, sans compétition, sans politique...
-                        bref, un cadre convivial et cosy.
-                    </Text>
-                    </View>
-                    <View style={{flexDirection: 'row', top: '-3%'}}>
-                        <Image source={require('../assets/images/led1.png')} style={{marginRight: 2, width: 15, height: 15}} />
-                        <Image source={require('../assets/images/led2.png')} style={{marginLeft: 2, width: 15, height: 15}}/>
+                    <View style={styles.pieds}>
+                        <Text style={{textAlign: 'center', color: 'white', fontWeight: '500', fontSize: 17}}>
+                            #BlueWorkS est ensemble d'espace de travail partagé ou se rencontrent Startups, TPE et PME. Nous 
+                            vous offrons un environnement stimulant sans hiérachie, sans compétition, sans politique...
+                            bref, un cadre convivial et cosy.
+                        </Text>
+                        <View style={{flexDirection: 'row'}}>
+                            <Image source={require('../assets/images/led1.png')} style={{marginRight: 2, width: 15, height: 15}} />
+                            <Image source={require('../assets/images/led2.png')} style={{marginLeft: 2, width: 15, height: 15}}/>
+                        </View>
                     </View>
                 </View>
                 <View style={styles.container}>
-                    <Button title="Embarquez" onPress={()=> this.props.navigation.replace('Accueil')} containerStyle={{position: 'absolute',top: 100, width: 300}} />
-                    <View style={styles.cardlogo1}>
-                        <Text style={styles.slogan1}>Great places to focus on what matters...</Text>
-                        <Text style={{textAlign: 'center', fontSize: 16, color: 'rgb(227,207,50)', fontWeight: '500'}}>www.blueworkspaces.com</Text>
+                <View style={styles.entete}>
+                        <TouchableNativeFeedback>
+                        <Button raised title="Lancez vous!!!" onPress={()=> replace('Accueil')}
+                            TouchableNativeFeedback
+                            containerStyle={{width: '75%',marginVertical: 20, marginTop: '15%'}}
+                        />
+                        </TouchableNativeFeedback>
+                        <Image source={require('../assets/images/blueworksN.png')} style={{height: 150, width: 150}} />
+                        <Text style={styles.slogan}>Great places to focus on what matters...</Text>
                     </View>
-                    <View style={styles.description1}>
-                        <Text style={{textAlign: 'center', margin: 2, color: 'white', fontWeight: '500', fontSize: 16}}>
-                        Blue WorkS vous donne la possibilité de choisir votre espace de travail et de bénéficier de tous les avantages d'un bureau
-                        emménagé. En devenant Blue Worker, vous intégrez une communauté qui vous ressemble et qui vous appartient, une communauté
-                        capable de se soutenir et de s'enrichir
+                    <View style={styles.pieds}>
+                        <Text style={{textAlign: 'center', color: 'white', fontWeight: '500', fontSize: 17, top: '-5%', marginVertical: 10}}>
+                            #BlueWorkS vous donne la possibilité de choisir votre espace de travail et de bénéficier de tous les avantages d'un bureau
+                            emménagé. En devenant Blue Worker, vous intégrez une communauté qui vous ressemble et qui vous appartient, une communauté
+                            capable de se soutenir et de s'enrichir.
                         </Text>
-                        <Text style={{textAlign: 'center', margin: 2, color: 'white', fontWeight: '500', fontSize: 16}}>
-                        Embarquez!!! Connectez vous au reste de la communauté et bénéficiez de nombreuse option tous les jours.
-                        </Text>
-                    </View>
                     <View style={{flexDirection: 'row', top: '-3%'}}>
                         <Image source={require('../assets/images/led2.png')} style={{marginRight: 2, width: 15, height: 15}} />
                         <Image source={require('../assets/images/led1.png')} style={{marginLeft: 2, width: 15, height: 15}}/>
+                    </View>
                     </View>
                 </View>
             </ScrollView>
@@ -70,36 +95,25 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         width,
-        height,
-        justifyContent: 'flex-end',
+        height
     },
-    description: {
-        justifyContent: 'flex-end',
-        top: '-5%'
+    entete: {
+        height: hp('60%'),
+        width: wp('100%'),
+        alignItems: 'center',
+        justifyContent: 'space-around'
     },
-    description1: {
-        justifyContent: 'flex-end',
-        top: '-5%'
+    pieds: {
+        height: hp('40%'),
+        width: wp('100%'),
+        alignItems: 'center',
+        justifyContent: 'space-around'
     },
     slogan: {
-        color: 'rgb(227,207,50)',
-        fontSize: 17,
         textAlign: 'center',
-        fontWeight: 'bold'
-    },
-    slogan1: {
-        color: 'rgb(227,207,50)',
         fontSize: 17,
-        textAlign: 'center',
+        color: 'rgb(227,207,50)',
         fontWeight: 'bold'
-    },
-    cardlogo: {
-        top: -230,
-        alignItems: 'center'
-    },
-    cardlogo1: {
-        top: -170,
-        alignItems: 'center'
     }
 
 });
