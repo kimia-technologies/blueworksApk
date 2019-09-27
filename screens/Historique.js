@@ -7,14 +7,13 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
-  ToastAndroid,
   AsyncStorage
 } from 'react-native';
+import Spinner from 'react-native-loading-spinner-overlay';
 import { Card, Badge } from 'react-native-elements';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
 var axios = require('axios');
-
 
 export default class Historiques extends React.Component{
   static navigationOptions = {
@@ -26,6 +25,7 @@ export default class Historiques extends React.Component{
     constructor(propos){
       super(propos);
       this.state = {
+        spinne: true,
         rsv: []
       };
     }
@@ -64,6 +64,7 @@ export default class Historiques extends React.Component{
             }
         })
         .then(rsv => {
+          this.setState({spinne: false});
           let rsvs;
           if(params === undefined){
             rsvs = rsv.data.filter(r => {
@@ -78,6 +79,7 @@ export default class Historiques extends React.Component{
           this.setState({rsv: rsvs});
         })
         .catch(async err => {
+          this.setState({spinne: false});
           if (err.response.status === 403) {
             const crd = await this._askNewToken();
             if(crd != null){
@@ -92,8 +94,14 @@ export default class Historiques extends React.Component{
         return(
           <View style={styles.container}>
             <ScrollView>
+                <Spinner
+                visible={this.state.spinne}
+                textContent={'Loading...'}
+                animation="fade"
+                color="rgb(0, 111, 186)"
+                />
                 {
-                  this.state.rsv.length === 0 ? <View style={{marginTop: 70, alignItems: 'center'}}>
+                  this.state.rsv.length === 0 && !this.state.spinne ? <View style={{marginTop: 70, alignItems: 'center'}}>
                     <Image source={require('../assets/images/empty.png')} />
                     <Text style={{fontSize: 17}}>{this.state.p !== undefined ? (this.state.p === true ? String('Vous n\'avez aucune reservation') : 
                     String('Vous n\'avez aucune reservation en cours')) : null}</Text>
@@ -116,8 +124,8 @@ export default class Historiques extends React.Component{
                           />
                               <Text>Type: {r.espace.NOMTYPE}</Text>
                               <Text>Formule: {r.formule.PERIODE === 0 ? 'Consommation direct' : r.formule.PERIODE + ' '+ r.formule.UNITE}</Text>
-                              <Text>DATE: {r.JOUR}</Text>
-                              <Text style={styles.heure}>{r.createdAt}</Text>
+                              <Text>Date debut: {r.JOUR}</Text>
+                              <Text style={styles.heure}>{new Date(r.createdAt).toLocaleDateString()}</Text>
                           </Card>
                     </TouchableOpacity>
                   ))

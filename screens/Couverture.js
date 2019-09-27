@@ -14,8 +14,7 @@ import { Button } from 'react-native-elements';
 import {
     widthPercentageToDP as wp,
     heightPercentageToDP as hp,
-    listenOrientationChange as lor,
-    removeOrientationListener as rol
+    listenOrientationChange as lor
 } from 'react-native-responsive-screen';
 
 export default class Couverture extends React.Component{
@@ -24,10 +23,6 @@ export default class Couverture extends React.Component{
     }
     componentDidMount() {
         lor(this);
-      }
-      
-      componentWillUnmount() {
-        rol();
       }
     render(){
         const {replace} = this.props.navigation;
@@ -49,9 +44,9 @@ export default class Couverture extends React.Component{
                     </View>
                     <View style={styles.pieds}>
                         <Text style={{textAlign: 'center', color: 'white', fontWeight: '500', fontSize: 17}}>
-                            #BlueWorkS est ensemble d'espace de travail partagé ou se rencontrent Startups, TPE et PME. Nous 
-                            vous offrons un environnement stimulant sans hiérachie, sans compétition, sans politique...
-                            bref, un cadre convivial et cosy.
+                            #BlueWorkS vous propose un ensemble d'espace de travail partagés ou se rencontrent Startups, TPE et PME. 
+                            Vous y trouvez des environnements stimulant sans hiérachie, sans compétition, sans politique...
+                            bref, un cadre convivial et cosy...
                         </Text>
                         <View style={{flexDirection: 'row'}}>
                             <Image source={require('../assets/images/led1.png')} style={{marginRight: 2, width: 15, height: 15}} />

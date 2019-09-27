@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, AsyncStorage, ScrollView, ToastAndroid, Image} from 'react-native';
+import { View, Text, StyleSheet, AsyncStorage, TouchableNativeFeedback, ScrollView, ToastAndroid, Image, Alert} from 'react-native';
 import { Table, Row, Rows} from 'react-native-table-component';
-import { Card } from 'react-native-elements';
+import { Card, Button } from 'react-native-elements';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
 
@@ -49,6 +49,33 @@ export default class EtatServices extends Component {
         });
         return token;
     }
+    async _asyncRenouveler() {
+      const {navigate} = this.props.navigation;
+      const token = await AsyncStorage.getItem('token');
+        const config = {
+          headers: {
+            'Content-type' : 'application/json',
+            'Access-Control-Allow-Origin' : '*',
+            'Authorization' : 'Bearer ' + token,
+            'b-action' : 'UPDATE',
+            'ressource' : 'reservation'
+          }
+        };
+        axios.patch(Api.baseUrl + '/api.blueworks/reservation/renouveler', {r: this.state.rsv}, config)
+        .then(async res => {
+          this._getConsommation();
+        })
+        .catch(async err => {
+          if (err.response.status === 403) {
+            const crd = await this._askNewToken();
+            if(crd != null){
+              await AsyncStorage.setItem('token', crd);
+              navigate('Confirm', {t: this.state.t, f: this.state.f});
+            }
+            else navigate('Login', {cible: 'Reservation', back: true});
+          }
+        });
+    }
     componentDidMount(){
       const {params} = this.props.navigation.state;
       axios.get(Api.baseUrl + '/api.blueworks/type/' + params.type, {
@@ -60,7 +87,7 @@ export default class EtatServices extends Component {
       })
       .then(res => {
         this.setState({description: res.data.INFO.DESCRIPTION});
-        this.setState({images: res.data.IMAGES[0].CONTENU});
+        this.setState({image: res.data.IMAGES[0].CONTENU});
       })
       .catch(async err => {
         const {navigate} = this.props.navigation;
@@ -106,7 +133,7 @@ export default class EtatServices extends Component {
           <View>
             <Card
               containerStyle={{marginVertical: 8}}
-              image={{uri: this.state.images}}
+              image={{uri: this.state.image}}
             >
               <View style={{marginBottom: 8, fontSize: 16}}>
                 <Text>{this.state.type}</Text>
@@ -120,6 +147,14 @@ export default class EtatServices extends Component {
               <Rows data={this.state.services} textStyle={styles.text}/>
             </Table>
           </View>
+          <TouchableNativeFeedback>
+          <Button raised title="Renouveler!" onPress={this._asyncRenouveler.bind(this)}
+              buttonStyle={{backgroundColor: 'white'}}
+              titleStyle={{color: 'rgb(0, 111, 186)'}}
+              TouchableNativeFeedback
+              containerStyle={{width: '30%', marginVertical: 20, marginLeft: '40%'}}
+          />
+          </TouchableNativeFeedback>
           <Text style={Styles.slogan}>Great places to focus on what matters...</Text>
           </ScrollView>
         )

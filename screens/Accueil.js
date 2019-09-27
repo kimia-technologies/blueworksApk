@@ -1,30 +1,28 @@
-import React from 'react';
+﻿import React from 'react';
 import {ScrollView,StyleSheet, Image,Text, View, Dimensions, AsyncStorage, ToastAndroid} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { Card, Badge, Avatar} from 'react-native-elements';
+import { Badge} from 'react-native-elements';
 import Slideshow from 'react-native-slideshow';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-  listenOrientationChange as lor,
-  removeOrientationListener as rol
+  listenOrientationChange as lor
 } from 'react-native-responsive-screen';
+import Spinner from 'react-native-loading-spinner-overlay';
 import { createDrawerNavigator,DrawerItems } from 'react-navigation';
 import Signin from './Signin';
 import Login from './Login';
 import Activer from './Activer';
-import Adherer from './Adherer';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
 var axios = require('axios');
 
 const CustomDrawerContentComponent = (props) => ( 
   <View>
-      <View style = {{height: 150, backgroundColor: 'rgb(0, 111, 186)', justifyContent: 'center', alignItems: 'center'}}>
-      <Avatar rounded title="SD" size="large" containerStyle={{top: 3, marginVertical: 5}}/>
-      <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold' }}></Text>
+      <View style = {{height: 150, backgroundColor: 'rgb(0, 111, 186)', justifyContent: "center", alignItems: "center"}}>
+        <Image source={require('../assets/images/blueworksN.png')} style={{width: 100, height: 100}} />
       </View>
-          <DrawerItems {...props}/>
+      <DrawerItems {...props}/>
   </View>
 );
 export class Accueil extends React.Component {
@@ -53,21 +51,7 @@ export class Accueil extends React.Component {
     })
     .then(res => {
       this.setState({etat: true});
-      let images = [];
-      let pos = [];
-      var tmp;
-      var i = 0;
-      while(i<5){
-        tmp = Math.floor(Math.random()*res.data.length);
-        if (!pos.includes(tmp)) {
-          pos.push(tmp);
-          i++;
-        }
-      }
-      for (let i=0, k=0; i<res.data.length && k<pos.length; i++, k++){
-        images.push({url: res.data[pos[k]]});
-      }
-      this.setState({dataSource: images});
+      this.setState({dataSource: res.data});
       this.setState({
       interval: setInterval(() => {
         this.setState({
@@ -81,13 +65,13 @@ export class Accueil extends React.Component {
       this.setState({etat: false});
     });
   }
-  async _asyncIsLoged(cible){
+  async _asyncIsLoged(cible, shortcut=undefined){
     const token = await AsyncStorage.getItem('token');
     const {navigate} = this.props.navigation;
     if(token !== null) {
-      navigate(cible);
+      navigate(cible, {shortcut: shortcut});
     }
-    else navigate('Login', {cible: cible, token: token});
+    else navigate('Login', {cible: cible, token: token, shortcut: shortcut});
   }
   async _asyncLogOut(){
     const token = await AsyncStorage.getItem('token');
@@ -115,10 +99,6 @@ export class Accueil extends React.Component {
   componentDidMount() {
     lor(this);
   }
-  
-  componentWillUnmount() {
-    rol();
-  }
  
   render(){
       return (
@@ -127,8 +107,8 @@ export class Accueil extends React.Component {
       </View> :
       <View style={styles.container}>
         <ScrollView>
-          <View style={{marginTop:0, marginVertical: 7, width,}}>
-          <View style={{width: '96%', marginLeft: '2%',marginTop:5}}>
+          <View style={{height: hp('30%'), width, padding: 5}}>
+          <View style={{}}>
             <Slideshow 
                 dataSource={this.state.dataSource}
                 position={this.state.position}
@@ -136,10 +116,11 @@ export class Accueil extends React.Component {
                 indicatorColor = 'rgb(0, 111, 186)'
                 scrollEnabled = {false}
                 overlay = {true}
+                height = {hp('30%')}
             />
             </View>
         </View>
-        <View style={{alignItems: 'center', height: '70%'}}>
+        <View style={{alignItems: 'center', height: hp('55%'), paddingTop: 15}}>
           <View style={styles.card}>
                 <View style={styles.cards}>
                       <TouchableOpacity style={styles.cardContenu} onPress={async () => await this._asyncIsLoged('GererReservation')}>
@@ -158,7 +139,6 @@ export class Accueil extends React.Component {
                   </View>
           </View>
           <View style={styles.card}>
-            
                   <View>
                       <TouchableOpacity style={styles.cardContenu} onPress={async () => await this._asyncIsLoged('GererCompte')}>
                         <Image style = {{width: 25, height: 25}}
@@ -176,9 +156,8 @@ export class Accueil extends React.Component {
                   </View>
           </View>
           <View style={styles.card}>
-            
                 <View>
-                      <TouchableOpacity style={styles.cardContenu} onPress={this._asyncLogOut}>
+                      <TouchableOpacity style={styles.cardContenu} onPress={this._asyncLogOut.bind(this)}>
                           <Image style = {{width: 22, height: 22}}
                           source={require('../assets/images/proche.png')} />
                           <Text style={styles.contenu}>Proche de moi</Text>
@@ -200,7 +179,7 @@ export class Accueil extends React.Component {
                       </TouchableOpacity>
                   </View>
                   <View>
-                    <TouchableOpacity style={styles.cardContenuB} onPress={async () => await this._asyncIsLoged('Reservation')}>
+                    <TouchableOpacity style={styles.cardContenuB} onPress={async () => await this._asyncIsLoged('Reservation', true)}>
                 <Image style = {{width: 25, height: 25}}
 
                 source={require('../assets/images/add.png')} />
@@ -212,7 +191,12 @@ export class Accueil extends React.Component {
           </View>
           </ScrollView>
           <Text style={Styles.slogan}>Great places to focus on what matters...</Text>
-        </View>) : null
+        </View>) : <Spinner
+                      visible={true}
+                      textContent={'Loading...'}
+                      animation="fade"
+                      color="rgb(0, 111, 186)"
+                    />
     );
   }
 }
@@ -221,13 +205,13 @@ export default createDrawerNavigator({
   Home: {
     screen: Accueil
   },
-  Activer: {
+  Activer_r: {
     screen: Activer
   },
-  Login: {
+  Login_r: {
     screen: Login
   },
-  Sign: {
+  Sign_r: {
     screen: Signin
   }
 }, {
@@ -235,13 +219,11 @@ export default createDrawerNavigator({
 });
 
 const {width = WIDTH} = Dimensions.get('window')
-const {height = HEIGHT} = Dimensions.get('window')
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'whitesmoke',
-    height
+    backgroundColor: 'whitesmoke'
   },
   card: {
     flexDirection: 'row',
@@ -287,7 +269,7 @@ const styles = StyleSheet.create({
   cardContenu: {
       backgroundColor: 'whitesmoke',
       width: wp('42%'),
-      height: hp('12%'),
+      height: hp('11%'),
       marginHorizontal: 13,
       borderRadius: 5,
       alignItems: 'center',

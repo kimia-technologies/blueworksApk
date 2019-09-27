@@ -3,7 +3,6 @@ import { Text, View, Image, StyleSheet, Picker, Dimensions, ToastAndroid, Scroll
 import {Collapse,CollapseHeader, CollapseBody } from 'accordion-collapse-react-native';
 import { List, ListItem, Separator } from 'native-base';
 import { Button } from 'react-native-paper';
-import { Card } from 'react-native-elements';
 import Slideshow from 'react-native-slideshow';
 import Api from '../constants/Api';
 var axios = require('axios');
@@ -12,7 +11,7 @@ export default class Services extends React.Component{
   static navigationOptions = {
     headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35}} />,
     headerRight: (
-      <Text style={{marginRight: 20, color: 'black', fontSize: 20, fontWeight: 'bold'}}>{String('Types d\'espaces')}</Text>
+      <Text style={{marginRight: 20, color: 'grey', fontSize: 20, fontWeight: 'bold'}}>{String('Types d\'espaces')}</Text>
     )
   }
   constructor(props){

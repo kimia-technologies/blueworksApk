@@ -7,7 +7,7 @@ export default class Actualites extends React.Component{
     static navigationOptions = {
         headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35}} />,
         headerRight: (
-          <Text style={{marginRight: 20, color: 'black', fontSize: 20, fontWeight: 'bold'}}>Bons plans</Text>
+          <Text style={{marginRight: 20, color: 'grey', fontSize: 20, fontWeight: 'bold'}}>Bons plans</Text>
         )
     }
     render(){

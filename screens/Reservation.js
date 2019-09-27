@@ -9,8 +9,10 @@ import {
   AsyncStorage,
   Image,
   ToastAndroid,
+  ScrollView,
   Picker,
 } from 'react-native';
+import Slideshow from 'react-native-slideshow';
 import DatePicker from "react-native-datepicker";
 import Api from '../constants/Api';
 var axios = require('axios');
@@ -26,14 +28,18 @@ export default class Reservation extends React.Component{
         super(props);
         this.state = {
           types: [],
+          dataSource: [],
+          position: 0,
           formules: [],
           inv: [],
-          isDateTimePickerVisible: false,
-          h: '08h - 14h'
+          isDateTimePickerVisible: false
         };
         this.data = {};
       }
     componentWillMount(){
+      const {params} = this.props.navigation.state;
+      if(params.shortcut !== undefined) this.setState({shortcut: true});
+      else this.setState({shortcut: false});
       axios.get(Api.baseUrl + '/api.blueworks/types', {
             params: {},
             headers: {
@@ -58,7 +64,37 @@ export default class Reservation extends React.Component{
         }
       }
     }
-    _getFormule(t){
+    async _getImage(t){
+      clearInterval(this.state.interval);
+      axios.get(Api.baseUrl + '/api.blueworks/type/' + t, {
+            params: {},
+            headers: {
+                'Content-type' : 'application/json',
+                'Access-Control-Allow-Origin' : '*'
+            }
+        })
+        .then(res => {
+          this.setState({descript: res.data.INFO.DESCRIPTION});
+          let images = [];
+          res.data.IMAGES.map(img => {
+            images.push({
+              url: img.CONTENU
+            });
+          });
+          this.setState({dataSource: images});
+          this.setState({
+            interval: setInterval(() => {
+              this.setState({
+                position: this.state.position === this.state.dataSource.length-1 ? 0 : this.state.position + 1
+              });
+            }, 5000)
+          });
+        })
+        .catch(err => {
+          ToastAndroid.show(err, ToastAndroid.LONG);
+        });
+    }
+    async _getFormule(t){
       axios.get(Api.baseUrl +'/api.blueworks/formules/' + t, {
             params: {},
             headers: {
@@ -112,7 +148,7 @@ export default class Reservation extends React.Component{
           i: this.state.i,
           h: this.state.h
         };
-        if(data.j === undefined)
+        if (data.j === undefined)
           ToastAndroid.show('Veuillez renseigner la date', ToastAndroid.LONG);
         else {
           await AsyncStorage.setItem('rsv', JSON.stringify(data));
@@ -137,6 +173,7 @@ export default class Reservation extends React.Component{
     }
   render(){
     return(
+      <ScrollView>
           <View style = {styles.container}>
             <View style={{marginVertical: 10}}>
                 <View style={styles.cadre}>
@@ -144,13 +181,14 @@ export default class Reservation extends React.Component{
                     <Picker
                         selectedValue={this.state.t}
                         style={{height: 40, width,color: 'grey'}}
-                        onValueChange={(itemValue, itemIndex) =>
+                        onValueChange={async (itemValue, itemIndex) =>
                           {
                             this.setState({t: itemValue});
                             itemValue.indexOf('Open') !== -1 ? this.setState({inv: [1]}) : ( itemValue.indexOf('Meeting') !== -1 ?
                               this.setState({inv: Array.from({length: 30},(x, i) => i + 1)}) :
                                 this.setState({inv: Array.from({length: 5},(x, i) => i + 1)}));
                             this._getFormule(itemValue);
+                            this._getImage(itemValue);
                           }
                         }>
                         {this.state.types.map(t=> (
@@ -158,6 +196,19 @@ export default class Reservation extends React.Component{
                         ))}
                     </Picker>
                 </View>
+                {this.state.shortcut ? <View style={{width: '96%', marginLeft: '2%',marginTop:5}}>
+                    <Slideshow 
+                      dataSource={this.state.dataSource}
+                      position={this.state.position}
+                      onPositionChanged={position => this.setState({ position })} 
+                      indicatorColor = 'rgb(0, 111, 186)'
+                      scrollEnabled = {false}
+                      overlay = {true}
+                    />
+                    <Text style={{marginBottom: 8, fontSize: 16}}>
+                      {this.state.descript}
+                    </Text>
+                </View> : null}
                 <View style={styles.cadre}>
                     <Text style={styles.text}>Formule</Text>
                     <Picker
@@ -186,13 +237,25 @@ export default class Reservation extends React.Component{
                           onValueChange={(itemValue, itemIndex) =>
                                 this.setState({h: itemValue})
                           }>
-                          <Picker.Item key="1" label="08h - 14h" value="08h - 14h" />
-                          <Picker.Item key="2" label="14h - 20h" value="14h - 20h" /> 
+                          <Picker.Item key="1" label="08h - 14h" value="08h-14h" />
+                          <Picker.Item key="2" label="14h - 20h" value="14h-20h" /> 
                       </Picker>
-                  </View> : null
+                  </View> : <View style={styles.cadre}>
+                    <Text style={styles.text}>Heure de debut</Text>
+                    <Picker
+                      selectedValue={this.state.h}
+                      style={{height: 40, width,color: 'grey'}}
+                      onValueChange={(itemValue, itemIndex) =>
+                            this.setState({h: itemValue})
+                      }>
+                      {Array.from({length: 13},(x, i) => i + 8).map(h => (
+                        <Picker.Item key={h} label={String(h) + 'h'} value={h} />
+                      ))}
+                    </Picker>
+                  </View>
                 }
                 <View style={styles.cadre }>
-                    <Text style={styles.text}>Nombre d'invité</Text>
+                    <Text style={styles.text}>Nombre de coworker</Text>
                     {<Picker
                         selectedValue={this.state.i}
                         style={{height: 40, width,color: 'grey'}}                        
@@ -214,7 +277,7 @@ export default class Reservation extends React.Component{
                           mode="date" //The enum of date, datetime and time
                           placeholder="select date"
                           format="YYYY-MM-DD"
-                          minDate="2016-01-01"
+                          minDate={new Date()}
                           confirmBtnText="Valider"
                           cancelBtnText="Annuler"
                           customStyles={{
@@ -236,12 +299,11 @@ export default class Reservation extends React.Component{
                     </TouchableOpacity>
                 </View>
             </View>
-                
               <TouchableOpacity style = {styles.button} onPress={this._asyncBook.bind(this)}>
-                  <Text style = {styles.buttonText}>Valider</Text>
+                  <Text style = {styles.buttonText}>Continuer</Text>
               </TouchableOpacity>
-
           </View>
+      </ScrollView>
     );
   }
 }
@@ -255,6 +317,7 @@ const styles = StyleSheet.create({
   button: {
         backgroundColor: 'rgb(0, 111, 186)',
         width: 330,
+        marginBottom: '5%',
         borderRadius: 25,
         paddingVertical: 13,
 

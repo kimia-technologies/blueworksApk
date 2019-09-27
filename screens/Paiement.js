@@ -12,6 +12,14 @@ export default class ServicesClient extends React.Component{
           <Text style={{marginRight: 17, color: 'grey', fontSize: 20, fontWeight: 'bold'}}>Paiement</Text>
           )
     }
+    constructor(props){
+      super(props);
+      this.state = {};
+    }
+    componentWillMount(){
+      const {params} = this.props.navigation.state;
+      this.setState({p: params.prix});
+    }
     async _pay(){
       const {navigate} = this.props.navigation;
         const token = await AsyncStorage.getItem('token');
@@ -24,7 +32,11 @@ export default class ServicesClient extends React.Component{
             'ressource' : 'reservation'
           }
         };
-        const data = JSON.parse(await AsyncStorage.getItem('rsv'));
+        const data = {
+          rsv: JSON.parse(await AsyncStorage.getItem('rsv')),
+          t: this.state.t,
+          p: this.state.p
+        };
         axios.post(Api.baseUrl + '/api.blueworks/reservation', data, config)
         .then(async res => {
           axios.post(Api.baseUrl + '/api.blueworks/reservation/pay', {r: res.data}, config)
@@ -42,7 +54,6 @@ export default class ServicesClient extends React.Component{
         });
     }
     render(){
-      const {params} = this.props.navigation.state;
         return(
             <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={-200} enabled>
                 <ScrollView>
@@ -50,7 +61,7 @@ export default class ServicesClient extends React.Component{
                     <Image source={require('../assets/images/paiement.jpg')} style={{ width: '100%', height: 170 }}/>
                     
                         <Text style={styles.text}>Date de Paiement : {new Date().toUTCString()}</Text>
-                        <Text style={styles.text}>Montant : {params.prix}</Text>
+                        <Text style={styles.text}>Montant : {this.state.p}</Text>
                         <Text style={{
                           marginVertical: 0,
                           marginLeft: 10,
@@ -62,6 +73,7 @@ export default class ServicesClient extends React.Component{
                           keyboardType = {'phone-pad'}
                           placeholder="Entrez votre numero de téléphone"
                           placeholderTextColor="grey"
+                          value={this.state.t}
                           onChangeText={text => this.setState({t: text})}
                         />
                         <View style={{flexDirection: 'row'}}>

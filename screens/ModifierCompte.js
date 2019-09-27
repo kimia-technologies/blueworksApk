@@ -12,7 +12,7 @@ import {
   KeyboardAvoidingView,
   ToastAndroid
 } from 'react-native';
-import {Avatar} from 'react-native-elements';
+import {Avatar, ListItem} from 'react-native-elements';
 import DatePicker from "react-native-datepicker";
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
@@ -33,6 +33,8 @@ export default class ModifierCompte extends React.Component{
   }
   componentDidMount(){
     this.setState({isDateTimePickerVisible: false});
+    const avat = this._computeAvantar();
+    this.setState({avatar: avat});
   }
   async _askNewToken(){
       const config = {
@@ -55,7 +57,18 @@ export default class ModifierCompte extends React.Component{
       return token;
   }
   async _asyncUpdate(){
-    const token = await AsyncStorage.getItem('token');
+    const pattern = {
+    tPattern : /^6[-\s\.\/0-9]{8}$/g,
+    gPattern : /[!#,^`\[\].?":{}|<>]/g
+    };
+    const {params} = this.props.navigation.state;
+    const data = {
+      ps: pattern.gPattern.test(this.state.ps) === false ? this.state.ps : undefined,
+      n: pattern.gPattern.test(this.state.n) === false ? this.state.n : undefined,
+      p: pattern.gPattern.test(this.state.p) === false ? this.state.p : undefined,
+      t: pattern.tPattern.test(this.state.t) === true ? this.state.t : undefined
+    };
+      const token = await AsyncStorage.getItem('token');
       const config = {
         headers: {
           'Content-type' : 'application/json',
@@ -65,34 +78,34 @@ export default class ModifierCompte extends React.Component{
           'ressource' : 'utilisateur'
         }
       };
-      axios.patch(Api.baseUrl + '/api.blueworks/account/my-account', this.state, config)
-      .then(res => {
-        ToastAndroid.show('success', ToastAndroid.LONG);
-        this.props.navigation.replace('GereCompte');
-      })
-      .catch(async err => {
-        ToastAndroid.show('echec', ToastAndroid.LONG);
-      });
+      if(data.t === undefined)
+        ToastAndroid.show('telephone incorrect', ToastAndroid.LONG);
+      else if(data.ps === undefined)
+        ToastAndroid.show('!#,^`\[\].?":{}|<> interdits', ToastAndroid.LONG);
+      else {
+        axios.patch(Api.baseUrl + '/api.blueworks/account/my-account', data, config)
+        .then(res => {
+          ToastAndroid.show('enregistrer', ToastAndroid.LONG);
+          this.props.navigation.replace('GererCompte');
+        })
+        .catch(err => {
+          ToastAndroid.show(err.response.data.msg, ToastAndroid.LONG);
+        });
+      }
   }
   _computeAvantar(){
-      const color = ['green', 'blue', 'grey', 'black', 'yellow'];
-      const alpha = ['A', 'F', 'K', 'P', 'U', 'B', 'G', 'L', 'Q', 'V', 'C', 'H', 'M', 'R',
-          'W', 'D', 'I', 'N', 'S', 'X', 'E', 'J', 'O', 'T', 'Y', 'Z'];
-      
       const first = String(this.state.n).split('')[0].toLocaleUpperCase();
       const second = String(this.state.p).split('')[0].toLocaleUpperCase();
-      const dist = (alpha.indexOf(second) + alpha.indexOf(first))%5;
       const avatar = first + '' + second;
-      return <Avatar rounded title={avatar} size="xlarge" containerStyle={{backgroundColor: 'black'}}/>;
+      return <Avatar rounded title={avatar} titleStyle={{color: "white"}} size="xlarge" showEditButton />;
   }
   render(){
     return(
     <ScrollView>
-      <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+      <KeyboardAvoidingView keyboardVerticalOffset={-200} behavior="padding" enabled>
       <View style = {styles.container}>
         <View style={{marginVertical: 0}}>
-          <View style={{marginTop: 10, alignItems: "center"}}>
-            {this._computeAvantar()}
+          <View style={{marginTop: 10, alignItems: "center"}}>{this.state.avatar}
           </View>
             <View>
               <Text style={{fontSize: 16, color: 'grey', marginLeft: 10, top: 20}}>Pseudo</Text>
@@ -144,7 +157,7 @@ export default class ModifierCompte extends React.Component{
               </View>
             </View>
             <View style={styles.cadre}>
-                <Text style={styles.text}>Date</Text>
+                <Text style={styles.text}>Anniversaire</Text>
                 <TouchableOpacity>              
                     <DatePicker
                       style={{width}}
@@ -152,7 +165,8 @@ export default class ModifierCompte extends React.Component{
                       mode="date" //The enum of date, datetime and time
                       placeholder="select date"
                       format="YYYY-MM-DD"
-                      minDate="2016-01-01"
+                      minDate="1970-01-01"
+                      maxDate={new Date()}
                       confirmBtnText="Valider"
                       cancelBtnText="Annuler"
                       customStyles={{

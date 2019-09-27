@@ -8,7 +8,7 @@ import {
   ScrollView,
   Dimensions
 } from 'react-native';
-import {Card, Avatar} from 'react-native-elements';
+import {Avatar} from 'react-native-elements';
 import Styles from '../constants/Styles';
 
 export default class GererServices extends React.Component{
@@ -29,7 +29,7 @@ async _goTo(screen){
           <TouchableOpacity onPress={() => this._goTo('Services')}>
             <View style={{flex: 1,alignItems: 'center', justifyContent: 'center', backgroundColor: 'whitesmoke', marginTop: 12}}>
               <View style={{alignItems: 'center'}}>
-                <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'grey'}}>Types d'espaces</Text>
+                <Text style={{ fontSize: 21, fontWeight: 'bold', color: 'black'}}>Types d'espaces</Text>
                 <Avatar rounded size="large" source={require('../assets/images/domicile.png')} containerStyle={{}}/>
               </View>
               <View style={{}}>
@@ -43,7 +43,7 @@ async _goTo(screen){
           <TouchableOpacity onPress={async () => await this._goTo('Services')}>
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'whitesmoke', marginTop: 16}}>
               <View style={{alignItems: 'center'}}>
-                <Text style={{ fontSize: 25, fontWeight: 'bold', color: 'grey'}}>Domiciliation d'entreprise</Text>
+                <Text style={{ fontSize: 21, fontWeight: 'bold', color: 'black'}}>Domiciliation d'entreprise</Text>
                 <Avatar rounded size="large" source={require('../assets/images/type.png')} containerStyle={{}}/>
               </View>
               <View>

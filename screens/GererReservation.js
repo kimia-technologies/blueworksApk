@@ -35,7 +35,7 @@ async _asyncIsLoged(cible){
             <View>
               <View style={{margin: 5, padding: 5}}>
                 <Text style={{fontSize: 17, textAlign: 'center'}}>
-                  Votre reservation expire le 7 septembre, pensez à renouveler 
+                  les reservations validées ne peuvent plus etre annulées
                 </Text>
               </View>
             </View>

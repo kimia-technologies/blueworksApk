@@ -55,6 +55,10 @@ export default class GererCompte extends React.Component{
             this.setState({n: user.data.NOM});
             this.setState({p: user.data.PRENOM});
             this.setState({t: user.data.PHONE});
+            this.setState({url: user.data.PHOTO});
+            this.setState({en: user.data.ENTREPRISE});
+            this.setState({f: user.data.ENTREROLE});
+            this.setState({d: user.data.ANNIV});
         })
         .catch(async err => {
             if (err.response.status === 403) {
@@ -68,15 +72,10 @@ export default class GererCompte extends React.Component{
         });
     }
     _computeAvantar(){
-        const color = ['green', 'blue', 'grey', 'black', 'yellow'];
-        const alpha = ['A', 'F', 'K', 'P', 'U', 'B', 'G', 'L', 'Q', 'V', 'C', 'H', 'M', 'R',
-            'W', 'D', 'I', 'N', 'S', 'X', 'E', 'J', 'O', 'T', 'Y', 'Z'];
-        
         const first = String(this.state.n).split('')[0].toLocaleUpperCase();
         const second = String(this.state.p).split('')[0].toLocaleUpperCase();
-        const dist = (alpha.indexOf(second) + alpha.indexOf(first))%5;
         const avatar = first + '' + second;
-        return <Avatar rounded title={avatar} size="large" containerStyle={{marginLeft: 40, marginTop: -40, backgroundColor: color[dist]}}/>;
+        return <Avatar rounded title={avatar} size="large" containerStyle={{marginLeft: 40, marginTop: -40}}/>;
     }
     render(){
         const {navigate} = this.props.navigation;
@@ -100,34 +99,46 @@ export default class GererCompte extends React.Component{
                         <Button title="Completer mon profil" onPress={() => navigate('ModifierCompte', {user: this.state})} containerStyle={{width: 170, height: 45, justifyContent: 'space-between', marginLeft: 150}}/>
                         <View style={{marginTop: -15, marginVertical: 5}}>
                         <Card
-                            containerStyle={{marginVertical: 8, height: 130}}
-                            
+                            containerStyle={{marginVertical: 8, height: 245}}
                             >
-                            <View style={{flexDirection: 'row'}}>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
                                 <Image source={require('../assets/images/mail.png')} style= {{height: 22,width: 22}} />
                                 <Text style={styles.name}> Email</Text>
                             </View>
-                            <Text style={{marginVertical: 5, fontSize: 15, marginLeft: 22}}>{this.state.e}</Text>
-                            <View style={{flexDirection: 'row'}}>
+                            <Text style={styles.value}>{this.state.e}</Text>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
                                 <Image source={require('../assets/images/call.png')} style= {{height: 22,width: 22}}/>
                                 <Text style={styles.name}> Telephone</Text>
                             </View>
-                            <Text style={{marginVertical: 5, fontSize: 15, marginLeft: 22}}>{this.state.t}</Text>
-                        </Card>
-                            <Card
-                            containerStyle={{marginVertical: 8, height: 130}}
-                            
-                            >
-                            <View style={{flexDirection: 'row'}}>
+                            <Text style={styles.value}>{this.state.t}</Text>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
                                 <Image source={require('../assets/images/cont.png')} style= {{height: 22,width: 22}}/>
                                 <Text style={styles.name}> Prenom</Text>
                             </View>
-                            <Text style={{marginVertical: 5, fontSize: 15, marginLeft: 22}}>{this.state.p}</Text>
-                            <View style={{flexDirection: 'row'}}>
+                            <Text style={styles.value}>{this.state.p}</Text>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
                                 <Image source={require('../assets/images/cont.png')} style= {{height: 22,width: 22}}/>
                                 <Text style={styles.name}> Nom</Text>
                             </View>
-                            <Text style={{marginVertical: 5, fontSize: 15, marginLeft: 22}}>{this.state.n}</Text>
+                            <Text style={styles.value}>{this.state.n}</Text>
+                        </Card>
+                        <Card
+                        containerStyle={{marginVertical: 8, height: 190}}>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
+                                <Image source={require('../assets/images/organisation.png')} style= {{height: 22,width: 22}}/>
+                                <Text style={styles.name}> Entreprise</Text>
+                            </View>
+                            <Text style={styles.value}>{this.state.en === null ? 'n/a' : this.state.en}</Text>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
+                                <Image source={require('../assets/images/role.png')} style= {{height: 22,width: 22}}/>
+                                <Text style={styles.name}> Fonction</Text>
+                            </View>
+                            <Text style={styles.value}>{this.state.f === null ? 'n/a' : this.state.f}</Text>
+                            <View style={{flexDirection: 'row', marginVertical: 5}}>
+                                <Image source={require('../assets/images/birthday.png')} style= {{height: 22,width: 22}}/>
+                                <Text style={styles.name}> Date anniversaire</Text>
+                            </View>
+                            <Text style={styles.value}>{this.state.d === null ? 'inconnue' : this.state.d}</Text>
                         </Card>
                         </View>
                     <Text style={Styles.slogan}>Great places to focus on what matters...</Text>
@@ -146,7 +157,13 @@ const styles = StyleSheet.create({
         marginLeft: 100
     },
     name: {
-        fontSize: 16,
+        fontSize: 16
+    },
+    value: {
+        marginVertical: 2,
+        fontSize: 15,
+        marginLeft: 22,
+        color: 'grey'
     },
     sousTitre: {
         fontWeight: 'bold',

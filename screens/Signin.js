@@ -11,6 +11,7 @@ import {
   Dimensions,
   KeyboardAvoidingView
 } from 'react-native';
+import Spinner from 'react-native-loading-spinner-overlay';
 import { Card } from 'react-native-elements';
 import Styles from '../constants/Styles';
 import Api from '../constants/Api';
@@ -28,7 +29,9 @@ export default class Sign extends React.Component{
   }
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      spinne: false
+    };
   }
   _asyncSignin() {
     const pattern = {
@@ -36,7 +39,6 @@ export default class Sign extends React.Component{
       tPattern : /^6[-\s\.\/0-9]{8}$/g,
       gPattern : /[!#,^`\[\].?":{}|<>]/g
     };
-    const {navigate} = this.props.navigation;
     const {params} = this.props.navigation.state;
     const data = {
       e: pattern.ePattern.test(this.state.e) === true ? this.state.e : undefined,
@@ -56,17 +58,21 @@ export default class Sign extends React.Component{
       };
       if(data.t === undefined)
         ToastAndroid.show('telephone incorrect', ToastAndroid.LONG);
+      else if (data.k === undefined)
+        ToastAndroid.show('le mot de passe doit contenir au moins 5 caracteres', ToastAndroid.LONG);
       else if(data.e === undefined)
         ToastAndroid.show('email incorrect', ToastAndroid.LONG);
       else if(data.ps === undefined)
         ToastAndroid.show('!#,^`\[\].?":{}|<> interdits', ToastAndroid.LONG);
       else {
+        this.setState({spinne: true});
         axios.post(Api.baseUrl + '/api.blueworks/signIn', data, config)
         .then(res => {
-          if(res.data.msg === 'success');
-            navigate('Activer', {cible: params.cible, email: data.e});
+            this.setState({spinne: false});
+            this.props.navigation.replace('Activer', {cible: params.cible, email: data.e});
         })
         .catch(err => {
+          this.setState({spinne: false});
           ToastAndroid.show(err.response.data.msg, ToastAndroid.LONG);
         });
       }
@@ -162,6 +168,12 @@ export default class Sign extends React.Component{
                   </View>
               </View>
 
+              <Spinner
+              visible={this.state.spinne}
+              color="rgb(0, 111, 186)"
+              animation="slide"
+              textContent={''}
+              />
               <TouchableOpacity style = {styles.button} onPress={this._asyncSignin.bind(this)}>
                   <Text style = {styles.buttonText}>Continuer</Text>
               </TouchableOpacity>

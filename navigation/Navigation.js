@@ -21,6 +21,7 @@ import Paiement from '../screens/Paiement';
 import EtatServices from '../screens/EtatServices';
 import ServicesClient from '../screens/ServicesClient';
 import GererServices from '../screens/GererServices';
+import Activer from '../screens/Activer';
 import React from 'react';
 import {Image, Text} from 'react-native';
 
@@ -31,8 +32,7 @@ const screen = createStackNavigator({
     Accueil: {
         screen: Acceuil,
         navigationOptions: {
-            headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35, marginLeft: 15}} />,
-            headerRight: <Text style={{marginRight: 20, color: 'grey', fontSize: 20, fontWeight: 'bold'}}>#BlueWorkS</Text>
+            headerTitle: <Image source={require('../assets/images/blueworks.png')} style={{width: 35, height: 35, marginLeft: 15}} />
         }
     },
     Login: {
@@ -82,7 +82,10 @@ const screen = createStackNavigator({
     },
     Paiement: {
         screen: Paiement
-    }
+    },
+    Activer: {
+      screen: Activer
+    },
 }, {
     initialRouteName: 'Couverture'
 }, {

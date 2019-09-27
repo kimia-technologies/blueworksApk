@@ -26,7 +26,6 @@ export default class Adherer extends React.Component{
           <Image style={{height: 300, width: 300}} source={require('../assets/images/qr.png')}/>
 
         </View>
-
         <View style={styles.infos}>
               <View>
                 <Text style={{fontSize: 40, fontWeight: '300'}}>Djamen</Text>
